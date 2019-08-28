@@ -105,14 +105,35 @@ struct TicTacToe {
     }
     
     mutating func step() {
-        let step = readPlayerStep()
-        matrix[step!.row, step!.col] = player.rawValue
+        let playerStep = readPlayerStep()
+        guard let step = playerStep else {
+            return
+        }
+        
+        let rowIdxCond = (step.row >= 0) && (step.row < matrix.boardSize)
+        guard rowIdxCond else {
+            print("Try again.")
+            return
+        }
+        
+        let colIdxCond = (step.col >= 0) && (step.col < matrix.boardSize)
+        guard colIdxCond else {
+            print("Try again.")
+            return
+        }
+        
+        guard matrix[step.row, step.col] == " " else {
+            print("Try again.")
+            return
+        }
+        
+        matrix[step.row, step.col] = player.rawValue
         player = (player == .playX) ? .playO : .playX
-        lastStep = MatrixIndex(step!.row, step!.col)
+        lastStep = MatrixIndex(step.row, step.col)
         tracker?.gameDidUpdateState(self)
     }
     
-    func readPlayerStep() -> (row: Int, col: Int)? {
+    private func readPlayerStep() -> (row: Int, col: Int)? {
         var input: String?
         repeat {
             print("Input comma-separated matrix dimensions (w, h): ", terminator: "")
@@ -126,7 +147,7 @@ struct TicTacToe {
         return nil
     }
     
-    func parsePlayerStep(from str: String) -> (Int, Int)? {
+    private func parsePlayerStep(from str: String) -> (Int, Int)? {
         let components = str.filter { !$0.isWhitespace }.split(separator: ",")
         guard components.count >= 2, let width = Int(components[0]), let height = Int(components[1]) else {
             return nil
@@ -134,25 +155,25 @@ struct TicTacToe {
         return (width, height)
     }
     
-    func checkRowOnEqualValues(_ step: MatrixIndex) -> Bool {
+    private func checkRowOnEqualValues(_ row: Int) -> Bool {
         for colInd in 0 ..< matrix.boardSize - 1 {
-            if matrix[step.row, colInd] != matrix[step.row, colInd + 1] {
+            if matrix[row, colInd] != matrix[row, colInd + 1] {
                 return false
             }
         }
         return true
     }
     
-    func checkColumnOnEqualValues(_ step: MatrixIndex) -> Bool {
+    private func checkColumnOnEqualValues(_ col: Int) -> Bool {
         for rowInd in 0 ..< matrix.boardSize - 1 {
-            if matrix[rowInd, step.column] != matrix[rowInd + 1, step.column] {
+            if matrix[rowInd, col] != matrix[rowInd + 1, col] {
                 return false
             }
         }
         return true
     }
     
-    func CheckMainDiagonalOnEqualValues() -> Bool {
+    private func CheckMainDiagonalOnEqualValues() -> Bool {
         for idx in 0 ..< matrix.boardSize - 1 {
             if matrix[idx, idx] != matrix[idx + 1, idx + 1] {
                 return false
@@ -161,7 +182,7 @@ struct TicTacToe {
         return true
     }
     
-    func CheckCounterDiagonalOnEqualValues() -> Bool {
+    private func CheckCounterDiagonalOnEqualValues() -> Bool {
         for idx in 0 ..< matrix.boardSize - 1 {
             if (matrix[idx, matrix.boardSize - 1 - idx] != matrix[idx + 1, matrix.boardSize - 2 - idx]) {
                 return false
@@ -175,10 +196,10 @@ struct TicTacToe {
             return false
         }
         
-        var isEnd = checkRowOnEqualValues(step)
+        var isEnd = checkRowOnEqualValues(step.row)
         
         if !isEnd {
-            isEnd = checkColumnOnEqualValues(step)
+            isEnd = checkColumnOnEqualValues(step.column)
         } else {
             isXWinner = (matrix[step] == "x") ? true : false
             return true
@@ -270,19 +291,12 @@ func readBoardType() -> String? {
     return input
 }
 
-
-
-
-
-
-
-
 var welcomed = false
 var greetedPlayer1 = false
 var greetedPlayer2 = false
 var boardInitialized = false
 
-var game: TicTacToe
+var game: TicTacToe = TicTacToe(.small)
 
 gameLoop: while true {
     if !welcomed {
@@ -314,19 +328,33 @@ gameLoop: while true {
         }
         switch type {
         case "small":
-            boardInitialized = true
             game = TicTacToe(.small, Tracker())
         case "middle":
-            boardInitialized = true
             game = TicTacToe(.middle, Tracker())
         case "large":
-            boardInitialized = true
             game = TicTacToe(.large, Tracker())
         default:
-            print("\nPlease try again.")
+            print("\nInvalid type.")
             break gameLoop
         }
+        
+        boardInitialized = true
+        print(game.state)
     }
     
-    // game process
+    game.step()
+    if game.checkEnd() {
+        break
+    }
+}
+
+switch game.isXWinner {
+case .some(let x):
+    if x {
+        print("The winner is X")
+    } else {
+        print("The winner is O")
+    }
+case nil:
+    print("No winner")
 }
