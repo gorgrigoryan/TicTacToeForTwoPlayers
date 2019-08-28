@@ -94,10 +94,11 @@ struct Matrix {
 struct TicTacToe {
     var matrix: Matrix
     var isXWinner: Bool?
-    var lastStep: MatrixIndex?
     var tracker: GameTracking?
-    var player = Player.playX
-    var completedStepsCount = 0
+
+    private var player = Player.playX
+    private var lastStep: MatrixIndex?
+    private var completedStepsCount = 0
     
     init(_ boardType: BoardType, _ tracker: GameTracking? = nil) {
         matrix = Matrix(boardType)
