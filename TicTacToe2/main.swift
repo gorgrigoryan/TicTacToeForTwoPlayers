@@ -104,18 +104,6 @@ struct TicTacToe {
         self.tracker?.gameDidStart(self)
     }
     
-    mutating func stepPlayerX(_ matrIdx: MatrixIndex) {
-        print("\nStep of player X")
-        matrix[matrIdx] = "x"
-        lastStep = matrIdx
-        tracker?.gameDidUpdateState(self)
-    }
-    
-    mutating func stepPlayerO(_ matrIdx: MatrixIndex) {
-        print("Step of player O")
-        matrix[matrIdx] = "o"
-    }
-    
     mutating func step() {
         let step = readPlayerStep()
         matrix[step!.row, step!.col] = player.rawValue
