@@ -97,6 +97,7 @@ struct TicTacToe {
     var lastStep: MatrixIndex?
     var tracker: GameTracking?
     var player = Player.playX
+    var completedStepsCount = 0
     
     init(_ boardType: BoardType, _ tracker: GameTracking? = nil) {
         matrix = Matrix(boardType)
@@ -127,6 +128,7 @@ struct TicTacToe {
             return
         }
         
+        completedStepsCount += 1
         matrix[step.row, step.col] = player.rawValue
         player = (player == .playX) ? .playO : .playX
         lastStep = MatrixIndex(step.row, step.col)
@@ -214,8 +216,9 @@ struct TicTacToe {
         let onMainDiagonal = step.onMainDiagonal()
         let onCounterDiagonal = step.onCounterDiagonal(matrix.boardSize)
         
+        let drawSituation = (completedStepsCount == matrix.board.count)
         if !onMainDiagonal || !onCounterDiagonal {
-            return isEnd
+            return (isEnd || drawSituation)
         }
         
         if onMainDiagonal {
@@ -236,7 +239,7 @@ struct TicTacToe {
             return true
         }
         
-        return isEnd
+        return (isEnd || drawSituation)
     }
 }
 
@@ -284,7 +287,7 @@ func readBoardType() -> String? {
     var input: String?
     repeat {
         print("Please select type of board for TicTacToe")
-        print("(input \"small\", \"middle\" or \"large\") 👉: ", terminator: "")
+        print("(input \"small\", \"middle\" or \"large\", another input is \"small\") 👉: ", terminator: "")
         input = readLine(strippingNewline: true)
     } while input != nil && input!.isEmpty
     
@@ -296,7 +299,7 @@ var greetedPlayer1 = false
 var greetedPlayer2 = false
 var boardInitialized = false
 
-var game: TicTacToe = TicTacToe(.small)
+var game: TicTacToe = TicTacToe(.small, Tracker())
 
 gameLoop: while true {
     if !welcomed {
@@ -327,15 +330,14 @@ gameLoop: while true {
             break gameLoop
         }
         switch type {
-        case "small":
-            game = TicTacToe(.small, Tracker())
         case "middle":
+            print("Selected 5x5 board")
             game = TicTacToe(.middle, Tracker())
         case "large":
+            print("Selected 7x7 board")
             game = TicTacToe(.large, Tracker())
         default:
-            print("\nInvalid type.")
-            break gameLoop
+            print("Selected 3x3 board")
         }
         
         boardInitialized = true
@@ -343,8 +345,9 @@ gameLoop: while true {
     }
     
     game.step()
+    
     if game.checkEnd() {
-        break
+        break gameLoop
     }
 }
 
@@ -356,5 +359,5 @@ case .some(let x):
         print("The winner is O")
     }
 case nil:
-    print("No winner")
+    print("Draw")
 }
