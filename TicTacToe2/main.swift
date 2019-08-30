@@ -187,7 +187,7 @@ struct TicTacToe {
     
     private func CheckCounterDiagonalOnEqualValues() -> Bool {
         for idx in 0 ..< matrix.boardSize - 1 {
-            if (matrix[idx, matrix.boardSize - 1 - idx] != matrix[idx + 1, matrix.boardSize - 2 - idx]) {
+            if matrix[idx, matrix.boardSize - 1 - idx] != matrix[idx + 1, matrix.boardSize - 2 - idx] {
                 return false
             }
         }
@@ -250,14 +250,19 @@ extension TicTacToe: Game {
     }
     
     var state: String {
-        let firstLine = "┏━━━" + String(repeating: "┳━━━", count: matrix.boardSize - 1) + "┓"
-        let verticalSeparatingLine = "┣━━━" + String(repeating: "╋━━━", count: matrix.boardSize - 1) + "┫"
-        let lastLine = "┗━━━" + String(repeating: "┻━━━", count: matrix.boardSize - 1) + "┛"
+        var numberArray = ["  "]
+        for i in 0 ..< matrix.boardSize {
+            numberArray.append("  " + String(i) + " ")
+        }
+        let numberLine = numberArray.joined()
+        let firstLine = "  ┏━━━" + String(repeating: "┳━━━", count: matrix.boardSize - 1) + "┓"
+        let verticalSeparatingLine = "  ┣━━━" + String(repeating: "╋━━━", count: matrix.boardSize - 1) + "┫"
+        let lastLine = "  ┗━━━" + String(repeating: "┻━━━", count: matrix.boardSize - 1) + "┛"
         
-        var lines = [firstLine]
+        var lines = [numberLine, firstLine]
         
         for i in 0 ..< matrix.boardSize {
-            var line = ""
+            var line = String(i) + " "
             for j in 0 ..< matrix.boardSize {
                 line += "┃ " + String(matrix[MatrixIndex(i, j)]) + String(" ")
             }
